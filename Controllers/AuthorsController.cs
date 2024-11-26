@@ -35,7 +35,7 @@ namespace Cantor_Andrei_Lab2.Controllers
                 return NotFound();
             }
 
-            var author = await _context.Author
+            var author = await _context.Author.Include(a => a.Books)
                 .FirstOrDefaultAsync(m => m.ID == id);
             if (author == null)
             {
