@@ -1,80 +1,101 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Cantor_Andrei_Lab2.Models;
 
-
 namespace Cantor_Andrei_Lab2.Data
 {
     public static class DbInitializer
     {
         public static void Initialize(IServiceProvider serviceProvider)
         {
-            using (var context = new LibraryContext(serviceProvider.GetRequiredService<DbContextOptions<LibraryContext>>()))
+            using (var context = new LibraryContext(
+                serviceProvider.GetRequiredService<DbContextOptions<LibraryContext>>()))
             {
                 if (context.Book.Any())
                 {
-                    return;
+                    return; // Database has been created before.
                 }
 
-
-                context.Author.AddRange(
-                    new Author
-                    {
-                        FirstName = "Mihail",
-                        LastName = "Sadoveanu",
-                    },
-                    new Author
-                    {
-                        FirstName = "George",
-                        LastName = "Calinescu",
-                    },
-                    new Author
-                    {
-                        FirstName = "Mircea",
-                        LastName = "Eliade",
-                    }
-                    );
-                context.Book.AddRange(
-                new Book
+                var authors = new Author[]
                 {
-                    Title = "Baltagul",
-                  //   Author = context.Author.Find(1),
-                    Price = Decimal.Parse("22")
-                },
-                new Book
+                    new Author { FirstName = "Mihail", LastName = "Sadoveanu" },
+                    new Author { FirstName = "George", LastName = "Calinescu" },
+                    new Author { FirstName = "Mircea", LastName = "Eliade" },
+                    new Author { FirstName = "Cella", LastName = "Serghi" },
+                    new Author { FirstName = "Guillame", LastName = "Musso" },
+                    new Author { FirstName = "Jerome David", LastName = "Salinger" }
+                };
+                foreach (Author a in authors)
                 {
-                    Title = "Enigma Otiliei",
-                    //Author = context.Authors.Find(2),
-                    Price = Decimal.Parse("18")
-                },
-                new Book
-                {
-                    Title = "Maytrei",
-                    //Author = context.Authors.Find(3),
-                    Price = Decimal.Parse("27")
+                    context.Author.Add(a);
                 }
+                context.SaveChanges();
 
-                );
-
-                context.Genre.AddRange(
-               new Genre { Name = "Roman" },
-               new Genre { Name = "Nuvela" },
-               new Genre { Name = "Poezie" }
-                );
-                context.Customer.AddRange(
-                new Customer
+                var books = new Book[]
                 {
-                    Name = "Popescu Marcela",
-                    Adress = "Str. Plopilor, nr. 24",
-                    BirthDate = DateTime.Parse("1979-09-01")
-                },
-                new Customer
+                    new Book { Title = "Baltagul", AuthorID = authors.Single(c => c.LastName == "Sadoveanu").ID, Price = Decimal.Parse("22") },
+                    new Book { Title = "Enigma Otiliei", AuthorID = authors.Single(c => c.LastName == "Calinescu").ID, Price = Decimal.Parse("18") },
+                    new Book { Title = "Maytrei", AuthorID = authors.Single(c => c.LastName == "Eliade").ID, Price = Decimal.Parse("27") },
+                    new Book { Title = "Panza de paianjen", AuthorID = authors.Single(c => c.LastName == "Serghi").ID, Price = Decimal.Parse("45") },
+                    new Book { Title = "Fata de hartie", AuthorID = authors.Single(c => c.LastName == "Musso").ID, Price = Decimal.Parse("38") },
+                    new Book { Title = "De veghe in lanul de secara", AuthorID = authors.Single(c => c.LastName == "Salinger").ID, Price = Decimal.Parse("28") }
+                };
+                foreach (Book b in books)
                 {
-                    Name = "Mihailescu Cornel",
-                    Adress = "Str. Bucuresti, nr. 45, ap. 2",
-                    BirthDate = DateTime.Parse("1969 - 07 - 08")
+                    context.Book.Add(b);
                 }
-                );
+                context.SaveChanges();
 
+                var customers = new Customer[]
+                {
+                    new Customer { Name = "Popescu Marcela", Adress = "Str. Plopilor 25, Ploiesti", BirthDate = DateTime.Parse("1979-09-01") },
+                    new Customer { Name = "Mihailescu Cornel", Adress = "Str. M. Eminescu 5, Cluj-Napoca", BirthDate = DateTime.Parse("1969-07-08") }
+                };
+                foreach (Customer c in customers)
+                {
+                    context.Customer.Add(c);
+                }
+                context.SaveChanges();
+
+                var orders = new Order[]
+                {
+                    new Order { BookID = books.Single(c => c.Title == "Baltagul").ID, CustomerID = customers.Single(c => c.Name == "Popescu Marcela").CustomerID, OrderDate = DateTime.Parse("2024-02-25") },
+                    new Order { BookID = books.Single(c => c.Title == "Maytrei").ID, CustomerID = customers.Single(c => c.Name == "Popescu Marcela").CustomerID, OrderDate = DateTime.Parse("2024-09-28") },
+                    new Order { BookID = books.Single(c => c.Title == "Baltagul").ID, CustomerID = customers.Single(c => c.Name == "Popescu Marcela").CustomerID, OrderDate = DateTime.Parse("2024-10-28") },
+                    new Order { BookID = books.Single(c => c.Title == "Enigma Otiliei").ID, CustomerID = customers.Single(c => c.Name == "Mihailescu Cornel").CustomerID, OrderDate = DateTime.Parse("2024-09-28") },
+                    new Order { BookID = books.Single(c => c.Title == "Panza de paianjen").ID, CustomerID = customers.Single(c => c.Name == "Mihailescu Cornel").CustomerID, OrderDate = DateTime.Parse("2024-09-28") },
+                    new Order { BookID = books.Single(c => c.Title == "De veghe in lanul de secara").ID, CustomerID = customers.Single(c => c.Name == "Mihailescu Cornel").CustomerID, OrderDate = DateTime.Parse("2024-10-28") }
+                };
+                foreach (Order e in orders)
+                {
+                    context.Order.Add(e);
+                }
+                context.SaveChanges();
+
+                var publishers = new Publisher[]
+                {
+                    new Publisher { PublisherName = "Humanitas", Adress = "Str. Aviatorilor, nr. 40, Bucuresti" },
+                    new Publisher { PublisherName = "Nemira", Adress = "Str. Plopilor, nr. 35, Ploiesti" },
+                    new Publisher { PublisherName = "Paralela 45", Adress = "Str. Cascadelor, nr. 22, Cluj-Napoca" }
+                };
+                foreach (Publisher p in publishers)
+                {
+                    context.Publisher.Add(p);
+                }
+                context.SaveChanges();
+
+                var publishedBooks = new PublishedBook[]
+                {
+                    new PublishedBook { BookID = books.Single(c => c.Title == "Maytrei").ID, PublisherID = publishers.Single(i => i.PublisherName == "Humanitas").ID },
+                    new PublishedBook { BookID = books.Single(c => c.Title == "Enigma Otiliei").ID, PublisherID = publishers.Single(i => i.PublisherName == "Humanitas").ID },
+                    new PublishedBook { BookID = books.Single(c => c.Title == "Baltagul").ID, PublisherID = publishers.Single(i => i.PublisherName == "Nemira").ID },
+                    new PublishedBook { BookID = books.Single(c => c.Title == "Fata de hartie").ID, PublisherID = publishers.Single(i => i.PublisherName == "Paralela 45").ID },
+                    new PublishedBook { BookID = books.Single(c => c.Title == "Panza de paianjen").ID, PublisherID = publishers.Single(i => i.PublisherName == "Paralela 45").ID },
+                    new PublishedBook { BookID = books.Single(c => c.Title == "De veghe in lanul de secara").ID, PublisherID = publishers.Single(i => i.PublisherName == "Paralela 45").ID }
+                };
+                foreach (PublishedBook pb in publishedBooks)
+                {
+                    context.PublishedBooks.Add(pb);
+                }
                 context.SaveChanges();
             }
         }
